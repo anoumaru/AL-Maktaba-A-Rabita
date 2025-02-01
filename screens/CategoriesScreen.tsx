@@ -1,14 +1,13 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import CategoryList from '../components/CategoryList';
 import { initialCategories } from '../types/categories';
 
 export default function CategoriesScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
 
   const handleCategorySelect = (categoryId: string) => {
-    // TODO: Implement navigation to category details
-    navigation.navigate('CategoryDetails', { categoryId });
+    router.push(`/(tabs)/${categoryId}`);
   };
 
   return (

@@ -18,6 +18,12 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="[categoryId]"
+        options={{
+          href: null, // Hide this tab from the tab bar
+        }}
+      />
     </Tabs>
   );
 } 

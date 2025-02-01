@@ -9,6 +9,13 @@ export default function RootLayout() {
           name="(tabs)" 
           options={{ headerShown: false }} 
         />
+        <Stack.Screen 
+          name="book/[id]" 
+          options={{ 
+            title: 'Reading',
+            headerBackTitle: 'Back'
+          }} 
+        />
       </Stack>
     </SafeAreaProvider>
   );
