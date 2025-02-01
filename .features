@@ -1,5 +1,6 @@
 This project is an Islamic Books App. The particular thing about it is that from a reference in a book, one can go to directly to that page referenced in another book. 
-The main language of the app is Arabic.
+The main language of the app is Arabic. So the layout should always resepect right to left writing, all writings should be in arabic.
+
 Core Features:
 Book Management
 Categorization by topics (Aqeedah, Fiqh, Hadith, etc.)

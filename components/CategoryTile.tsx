@@ -1,4 +1,4 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, I18nManager } from 'react-native';
 import { BookCategory } from '../types/categories';
 
 interface CategoryTileProps {
@@ -9,12 +9,12 @@ interface CategoryTileProps {
 export default function CategoryTile({ category, onPress }: CategoryTileProps) {
   return (
     <TouchableOpacity
-      onPress={onPress}
       style={[styles.container, { backgroundColor: category.color }]}
+      onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`Browse ${category.name} category`}
+      accessibilityLabel={category.nameAr}
     >
-      <Text style={styles.title}>{category.name}</Text>
+      <Text style={styles.title}>{category.nameAr}</Text>
     </TouchableOpacity>
   );
 }
@@ -31,11 +31,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
+    writingDirection: 'rtl',
   },
   title: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: '600',
     textAlign: 'center',
+    writingDirection: 'rtl',
+    fontFamily: 'System',  // We should add Arabic font
   },
 }); 

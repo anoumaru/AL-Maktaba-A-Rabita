@@ -30,6 +30,10 @@
       ["expo-router", {
         "origin": "https://islamicbooksapp.expo.dev"
       }]
+    ],
+    "assetBundlePatterns": [
+      "**/*",
+      "assets/books/*"
     ]
   }
 }

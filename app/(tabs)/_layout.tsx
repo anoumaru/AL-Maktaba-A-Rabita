@@ -12,11 +12,12 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Books',
+          title: 'الكتب',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="book" size={size} color={color} />
           ),
         }}
+
       />
       <Tabs.Screen
         name="[categoryId]"

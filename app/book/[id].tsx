@@ -10,7 +10,7 @@ export default function BookReader() {
   if (!book) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text>Book not found</Text>
+        <Text style={styles.error}>الكتاب غير موجود</Text>
       </SafeAreaView>
     );
   }
@@ -18,9 +18,9 @@ export default function BookReader() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{book.title}</Text>
-        <Text style={styles.author}>by {book.author}</Text>
-        <Text style={styles.bookContent}>{book.content}</Text>
+        <Text style={styles.title}>{book.titleAr}</Text>
+        <Text style={styles.author}>تأليف: {book.authorAr}</Text>
+        <Text style={styles.bookContent}>{book.contentAr}</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -38,14 +38,26 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 8,
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   author: {
     fontSize: 16,
     color: '#6B7280',
     marginBottom: 24,
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   bookContent: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 18,
+    lineHeight: 32,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  error: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#EF4444',
   },
 }); 
