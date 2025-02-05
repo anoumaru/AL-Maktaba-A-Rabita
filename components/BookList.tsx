@@ -1,6 +1,7 @@
 import { View, FlatList, StyleSheet } from 'react-native';
 import { Book } from '../types/books';
 import BookCard from './BookCard';
+import React = require('react');
 
 interface BookListProps {
   books: Book[];

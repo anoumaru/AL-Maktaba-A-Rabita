@@ -1,9 +1,10 @@
 import { I18nManager, View } from 'react-native';
 import { useEffect } from 'react';
+import React = require('react');
 
 // Force RTL layout
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+I18nManager.allowRTL(false);
+I18nManager.forceRTL(false);
 
 export function RTLProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {

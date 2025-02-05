@@ -2,6 +2,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import CategoryList from '../components/CategoryList';
 import { initialCategories } from '../types/categories';
+import React = require('react');
 
 export default function CategoriesScreen() {
   const router = useRouter();

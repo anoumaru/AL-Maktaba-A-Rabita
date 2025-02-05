@@ -1,5 +1,6 @@
 import { TouchableOpacity, Text, StyleSheet, I18nManager } from 'react-native';
 import { BookCategory } from '../types/categories';
+import React = require('react');
 
 interface CategoryTileProps {
   category: BookCategory;

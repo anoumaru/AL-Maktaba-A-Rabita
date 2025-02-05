@@ -1,6 +1,7 @@
 import { FlatList, Dimensions } from 'react-native';
 import { BookCategory } from '../types/categories';
 import CategoryTile from './CategoryTile';
+import React = require('react');
 
 const { width } = Dimensions.get('window');
 const COLUMNS = width > 768 ? 3 : 2;
