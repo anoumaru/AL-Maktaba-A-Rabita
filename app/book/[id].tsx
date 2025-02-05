@@ -7,7 +7,8 @@ import {
   Dimensions,
   I18nManager,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -86,10 +87,12 @@ export default function BookReader() {
     if (!trimmedSearch)
       return (
         <Text
+          selectable={true} // Make text selectable
           style={[
             styles.text,
             { fontSize, lineHeight, marginTop: fontSize * 2 }
           ]}
+          onLongPress={() => handleLongPress(content)} // Optional: Handle long press
         >
           {content}
         </Text>
@@ -100,7 +103,9 @@ export default function BookReader() {
 
     return (
       <Text
+        selectable={true} // Make text selectable
         style={[styles.text, { fontSize, lineHeight, marginTop: fontSize * 2 }]}
+        onLongPress={() => handleLongPress(content)} // Optional: Handle long press
       >
         {parts.map(
           (part, index) =>
@@ -117,6 +122,24 @@ export default function BookReader() {
     );
   };
 
+  // Function to handle long press (optional)
+  const handleLongPress = text => {
+    Alert.alert("نسخ النص", "هل تريد نسخ النص المحدد؟", [
+      {
+        text: "إلغاء",
+        style: "cancel"
+      },
+      {
+        text: "نسخ",
+        onPress: () => {
+          // Copy text to clipboard
+          Clipboard.setString(text);
+          Alert.alert("تم النسخ", "تم نسخ النص إلى الحافظة.");
+        }
+      }
+    ]);
+  };
+
   const handleButtonPress = buttonName => {
     if (buttonName === "الفهرس") {
       setIsDrawerOpen(true); // Open the drawer when "الفهرس" is pressed
@@ -128,7 +151,8 @@ export default function BookReader() {
     ) {
       toggleDiacritics(); // Toggle diacritics
     } else {
-      console.log(`${buttonName} button pressed`); // for other buttons
+      console.log(`${buttonName} button pressed`);
+      // Add your button press logic here
     }
   };
 
@@ -138,7 +162,7 @@ export default function BookReader() {
       page => page.chapterId === chapterId
     );
     if (firstPageOfChapter && pagerRef.current) {
-      pagerRef.current.setPage(firstPageOfChapter.pageNumber ); 
+      pagerRef.current.setPage(firstPageOfChapter.pageNumber ); // Assuming pageNumber starts from 1
       setIsDrawerOpen(false); // Close the drawer after navigation
     }
   };
@@ -186,16 +210,16 @@ export default function BookReader() {
         {isSliderVisible && <View style={styles.sliderContainer}>
             <Slider style={styles.slider} minimumValue={10} maximumValue={40} step={1} value={fontSize} onValueChange={value => {
                 setFontSize(value);
-                setLineHeight(value * 1.6); // Adjust line height proportionally to font size
+                setLineHeight(value * 1.6);
               }} minimumTrackTintColor="#000" maximumTrackTintColor="#ccc" />
           </View>}
 
         <PagerView style={styles.pagerView} layoutDirection="rtl" initialPage={0} ref={pagerRef}>
           <View key="cover" style={styles.coverPage}>
-            <Text style={[styles.title, { fontSize: fontSize + 8 }]}>
+            <Text selectable={true} style={[styles.title, { fontSize: fontSize + 8 }]}>
               {book.titleAr}
             </Text>
-            <Text selectable style={[styles.author, { fontSize: fontSize + 4 }]}>
+            <Text selectable={true} style={[styles.author, { fontSize: fontSize + 4 }]}>
               تأليف: {book.authorAr}
             </Text>
           </View>
