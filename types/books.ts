@@ -33,7 +33,7 @@ export const sampleBooks: Book[] = [
         pageNumber: 1,
         isIndex: false,
         content: 'Chapter 1: The Virtue of Tawheed...',
-        contentAr: 'باب فضل التوحيد وما يكفر من الذنوب...',
+        contentAr: 'أَبُو الطَّيِّب المُتَنَبِّي أحمَدُ بن الحُسَينِ الجُعْفِيُّ الكِنْدِيُّ الكُوفِيُّ ',
         chapterId: 'chapter1'
       },
       {

@@ -18,6 +18,11 @@ import Slider from "@react-native-community/slider";
 
 const { width, height } = Dimensions.get("window");
 
+// Function to remove Arabic diacritics
+const removeDiacritics = text => {
+  return text.replace(/[\u064B-\u065F\u0670]/g, ""); // Removes all Arabic diacritics
+};
+
 export default function BookReader() {
   const { id } = useLocalSearchParams();
   const book = sampleBooks.find(b => b.id === id);
@@ -28,6 +33,7 @@ export default function BookReader() {
   const [fontSize, setFontSize] = useState(20); // State to manage font size
   const [lineHeight, setLineHeight] = useState(32); // State to manage line height
   const [isSliderVisible, setIsSliderVisible] = useState(false); // State to manage slider visibility
+  const [showDiacritics, setShowDiacritics] = useState(true); // State to manage diacritics visibility
   const pagerRef = useRef(null);
 
   useEffect(() => {
@@ -44,9 +50,19 @@ export default function BookReader() {
     );
   }
 
+  // Function to toggle diacritics
+  const toggleDiacritics = () => {
+    setShowDiacritics(!showDiacritics);
+  };
+
   const findPageWithText = text => {
     if (!text.trim()) return;
-    const index = book.pages.findIndex(page => page.contentAr.includes(text));
+    const index = book.pages.findIndex(page => {
+      const content = showDiacritics
+        ? page.contentAr
+        : removeDiacritics(page.contentAr);
+      return content.includes(text);
+    });
     if (index !== -1) {
       setTargetPage(index);
     }
@@ -63,6 +79,7 @@ export default function BookReader() {
 
   const highlightText = (text, search) => {
     const trimmedSearch = search.trim();
+    const content = showDiacritics ? text : removeDiacritics(text);
     if (!trimmedSearch)
       return (
         <Text
@@ -71,12 +88,12 @@ export default function BookReader() {
             { fontSize, lineHeight, marginTop: fontSize * 2 }
           ]}
         >
-          {text}
+          {content}
         </Text>
       );
 
     const regex = new RegExp(`(${trimmedSearch})`, "gi");
-    const parts = text.split(regex);
+    const parts = content.split(regex);
 
     return (
       <Text
@@ -102,6 +119,11 @@ export default function BookReader() {
       setIsDrawerOpen(true); // Open the drawer when "الفهرس" is pressed
     } else if (buttonName === "حجم الخط") {
       setIsSliderVisible(!isSliderVisible); // Toggle slider visibility
+    } else if (
+      buttonName === "ازاله التشكيل" ||
+      buttonName === "اعاده التشكيل"
+    ) {
+      toggleDiacritics(); // Toggle diacritics
     } else {
       console.log(`${buttonName} button pressed`);
       // Add your button press logic here
@@ -138,9 +160,14 @@ export default function BookReader() {
         <View style={styles.buttonBar}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => handleButtonPress("ازاله التشكيل")}
+            onPress={() =>
+              handleButtonPress(
+                showDiacritics ? "ازاله التشكيل" : "اعاده التشكيل"
+              )}
           >
-            <Text style={styles.buttonText}>ازاله التشكيل</Text>
+            <Text style={styles.buttonText}>
+              {showDiacritics ? "ازاله التشكيل" : "اعاده التشكيل"}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
@@ -317,17 +344,18 @@ const styles = StyleSheet.create({
   sliderContainer: {
     position: "absolute",
     left: 20,
-    top: 150,
+    top: 100,
     height: 200,
     justifyContent: "center",
     alignItems: "center",
-    width: 20,
+    width: 200,
+    backgroundColor: "green",
     zIndex: 100
   },
   slider: {
     backgroundColor: "black",
-    width: 180,
-    height: 20,
+    width: 140,
+    height: 120,
     margin: 0,
     transform: [{ rotate: "270deg" }]
   }
