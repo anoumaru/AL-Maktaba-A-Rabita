@@ -7,17 +7,14 @@ import {
   Dimensions,
   I18nManager,
   ScrollView,
-  TouchableOpacity,
+  TouchableOpacity
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { sampleBooks } from "../../types/books";
 
-
 const { width, height } = Dimensions.get("window");
-
-
 
 export default function BookReader() {
   const { id } = useLocalSearchParams();
@@ -84,40 +81,34 @@ export default function BookReader() {
     );
   };
 
-  const handleFabPress = () => {
-    setIsFabExpanded(!isFabExpanded); // Toggle FAB expansion
+  const handleButtonPress = buttonName => {
+    console.log(`${buttonName} button pressed`);
+    // Add your button press logic here
   };
 
-  const handleIndexPress = () => {
-    alert("الفهرس button pressed!");
-    setIsFabExpanded(false); // Collapse FAB after pressing
-  };
-
-  const handleTashkeelPress = () => {
-    alert("تشكيل button pressed!");
-    setIsFabExpanded(false); // Collapse FAB after pressing
-  };
-
-  return (
-    <SafeAreaView style={styles.container}>
+  return <SafeAreaView style={styles.container}>
+      {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="🔍 بحث..."
-          value={searchText}
-          onChangeText={text => {
+        <TextInput style={styles.searchInput} placeholder="🔍 بحث..." value={searchText} onChangeText={text => {
             setSearchText(text);
             findPageWithText(text);
-          }}
-        />
+          }} />
       </View>
 
-      <PagerView
-        style={styles.pagerView}
-        layoutDirection="rtl"
-        initialPage={0}
-        ref={pagerRef}
-      >
+      {/* Button Bar */}
+      <View style={styles.buttonBar}>
+        <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("Button 1")}>
+          <Text style={styles.buttonText}>ازاله التشكيل</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("Button 2")}>
+          <Text style={styles.buttonText}>الفهرس </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("Button 3")}>
+          <Text style={styles.buttonText}>حجم الخط</Text>
+        </TouchableOpacity>
+      </View>
+
+      <PagerView style={styles.pagerView} layoutDirection="rtl" initialPage={0} ref={pagerRef}>
         <View key="cover" style={styles.coverPage}>
           <Text style={styles.title}>
             {book.titleAr}
@@ -127,7 +118,10 @@ export default function BookReader() {
           </Text>
         </View>
         {book.pages.map(page =>
-          <ScrollView key={page.pageNumber} contentContainerStyle={styles.page}>
+          <ScrollView
+            key={page.pageNumber}
+            contentContainerStyle={styles.page}
+          >
             <Text style={styles.pageNumber}>
               صفحة {page.pageNumber}
             </Text>
@@ -135,28 +129,7 @@ export default function BookReader() {
           </ScrollView>
         )}
       </PagerView>
-
-      {/* Floating Action Button and Expanded Buttons */}
-      <View style={styles.fabContainer}>
-        {isFabExpanded && (
-          <>
-            <TouchableOpacity
-              style={[styles.fab, styles.fabSmall, { bottom: 90, right: 20 }]}
-              onPress={handleIndexPress}
-            >
-              <Text style={styles.fabText}>الفهرس</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.fab, styles.fabSmall, { bottom: 150, right: 20 }]}
-              onPress={handleTashkeelPress}
-            >
-              <Text style={styles.fabText}>تشكيل</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-    </SafeAreaView>
-  );
+    </SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
@@ -166,12 +139,12 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     position: "absolute",
-    top: 10,
+    top: 5,
     left: 10,
     right: 10,
     zIndex: 100
   },
-  pageNumber:{},
+  pageNumber: {},
   searchInput: {
     height: 50,
     backgroundColor: "white",
@@ -182,10 +155,10 @@ const styles = StyleSheet.create({
     writingDirection: "rtl",
     borderWidth: 1,
     borderColor: "#ccc",
-    elevation: 5,
+    elevation: 15,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.8,
     shadowRadius: 4
   },
   pagerView: {
@@ -234,33 +207,27 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: "#EF4444"
   },
-  fabContainer: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    alignItems: "flex-end",
-  },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
+  buttonBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
     alignItems: "center",
-    elevation: 5,
+    paddingVertical: 10,
+    marginTop: 35
+  },
+  button: {
+    padding: 10,
+    backgroundColor: "white",
+    borderRadius: 5,
+    borderColor: "#20232a",
+    borderWidth: 0.5,
+    elevation: 15,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    backgroundColor: "#6200EE",
+    shadowOpacity: 0.2,
+    shadowRadius: 4
   },
-  fabSmall: {
-    width: 100,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#6200EE",
-  },
-  fabText: {
-    color: "white",
-    fontSize: 16,
-  },
+  buttonText: {
+    color: "black",
+    fontSize: 16
+  }
 });
