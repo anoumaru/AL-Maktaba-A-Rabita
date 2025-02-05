@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { sampleBooks } from "../../types/books";
 import { Drawer } from "react-native-drawer-layout";
+import Slider from "@react-native-community/slider";
 
 const { width, height } = Dimensions.get("window");
 
@@ -24,6 +25,9 @@ export default function BookReader() {
   const [targetPage, setTargetPage] = useState(null);
   const [isFabExpanded, setIsFabExpanded] = useState(false); // State to manage FAB expansion
   const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State to manage drawer open/close
+  const [fontSize, setFontSize] = useState(20); // State to manage font size
+  const [lineHeight, setLineHeight] = useState(32); // State to manage line height
+  const [isSliderVisible, setIsSliderVisible] = useState(false); // State to manage slider visibility
   const pagerRef = useRef(null);
 
   useEffect(() => {
@@ -61,7 +65,12 @@ export default function BookReader() {
     const trimmedSearch = search.trim();
     if (!trimmedSearch)
       return (
-        <Text style={styles.text}>
+        <Text
+          style={[
+            styles.text,
+            { fontSize, lineHeight, marginTop: fontSize * 2 }
+          ]}
+        >
           {text}
         </Text>
       );
@@ -70,11 +79,16 @@ export default function BookReader() {
     const parts = text.split(regex);
 
     return (
-      <Text style={styles.text}>
+      <Text
+        style={[styles.text, { fontSize, lineHeight, marginTop: fontSize * 2 }]}
+      >
         {parts.map(
           (part, index) =>
             part.toLowerCase() === trimmedSearch.toLowerCase()
-              ? <Text key={index} style={styles.highlight}>
+              ? <Text
+                  key={index}
+                  style={[styles.highlight, { fontSize, lineHeight }]}
+                >
                   {part}
                 </Text>
               : part
@@ -86,6 +100,8 @@ export default function BookReader() {
   const handleButtonPress = buttonName => {
     if (buttonName === "الفهرس") {
       setIsDrawerOpen(true); // Open the drawer when "الفهرس" is pressed
+    } else if (buttonName === "حجم الخط") {
+      setIsSliderVisible(!isSliderVisible); // Toggle slider visibility
     } else {
       console.log(`${buttonName} button pressed`);
       // Add your button press logic here
@@ -140,6 +156,24 @@ export default function BookReader() {
           </TouchableOpacity>
         </View>
 
+        {/* Vertical Slider for Font Size and Line Height */}
+        {isSliderVisible &&
+          <View style={styles.sliderContainer}>
+            <Slider
+              style={styles.slider}
+              minimumValue={10}
+              maximumValue={40}
+              step={1}
+              value={fontSize}
+              onValueChange={value => {
+                setFontSize(value);
+                setLineHeight(value * 1.6); // Adjust line height proportionally to font size
+              }}
+              minimumTrackTintColor="#000"
+              maximumTrackTintColor="#ccc"
+            />
+          </View>}
+
         <PagerView
           style={styles.pagerView}
           layoutDirection="rtl"
@@ -147,10 +181,10 @@ export default function BookReader() {
           ref={pagerRef}
         >
           <View key="cover" style={styles.coverPage}>
-            <Text style={styles.title}>
+            <Text style={[styles.title, { fontSize: fontSize + 8 }]}>
               {book.titleAr}
             </Text>
-            <Text style={styles.author}>
+            <Text style={[styles.author, { fontSize: fontSize + 4 }]}>
               تأليف: {book.authorAr}
             </Text>
           </View>
@@ -183,7 +217,12 @@ const styles = StyleSheet.create({
     right: 10,
     zIndex: 100
   },
-  pageNumber: {},
+  pageNumber: {
+    textAlign: "center",
+    fontWeight: "bold",
+    backgroundColor: "rgba(255, 255, 255, 0.7)", // Optional: Transparent white background
+    paddingVertical: 5
+  },
   searchInput: {
     height: 50,
     backgroundColor: "white",
@@ -210,14 +249,12 @@ const styles = StyleSheet.create({
     padding: 20
   },
   title: {
-    fontSize: 28,
     fontWeight: "bold",
     marginBottom: 12,
     textAlign: "center",
     writingDirection: "rtl"
   },
   author: {
-    fontSize: 20,
     color: "#6B7280",
     textAlign: "center",
     writingDirection: "rtl"
@@ -226,13 +263,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     width: width,
     height: height,
-    marginTop: 100,
     writingDirection: "rtl",
     padding: 20
   },
   text: {
-    fontSize: 20,
-    lineHeight: 32,
     textAlign: "right",
     writingDirection: "rtl"
   },
@@ -279,5 +313,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "right"
+  },
+  sliderContainer: {
+    position: "absolute",
+    left: 20,
+    top: 150,
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 20,
+    zIndex: 100
+  },
+  slider: {
+    backgroundColor: "black",
+    width: 180,
+    height: 20,
+    margin: 0,
+    transform: [{ rotate: "270deg" }]
   }
 });
