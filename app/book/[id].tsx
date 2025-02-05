@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import PagerView from "react-native-pager-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { sampleBooks } from "../../types/books";
+import { Drawer } from "react-native-drawer-layout";
 
 const { width, height } = Dimensions.get("window");
 
@@ -22,7 +23,8 @@ export default function BookReader() {
   const [searchText, setSearchText] = useState("");
   const [targetPage, setTargetPage] = useState(null);
   const [isFabExpanded, setIsFabExpanded] = useState(false); // State to manage FAB expansion
-  const pagerRef = React.useRef(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State to manage drawer open/close
+  const pagerRef = useRef(null);
 
   useEffect(() => {
     if (!I18nManager.isRTL) {
@@ -82,54 +84,91 @@ export default function BookReader() {
   };
 
   const handleButtonPress = buttonName => {
-    console.log(`${buttonName} button pressed`);
-    // Add your button press logic here
+    if (buttonName === "الفهرس") {
+      setIsDrawerOpen(true); // Open the drawer when "الفهرس" is pressed
+    } else {
+      console.log(`${buttonName} button pressed`);
+      // Add your button press logic here
+    }
   };
 
-  return <SafeAreaView style={styles.container}>
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <TextInput style={styles.searchInput} placeholder="🔍 بحث..." value={searchText} onChangeText={text => {
-            setSearchText(text);
-            findPageWithText(text);
-          }} />
-      </View>
-
-      {/* Button Bar */}
-      <View style={styles.buttonBar}>
-        <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("Button 1")}>
-          <Text style={styles.buttonText}>ازاله التشكيل</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("Button 2")}>
-          <Text style={styles.buttonText}>الفهرس </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("Button 3")}>
-          <Text style={styles.buttonText}>حجم الخط</Text>
-        </TouchableOpacity>
-      </View>
-
-      <PagerView style={styles.pagerView} layoutDirection="rtl" initialPage={0} ref={pagerRef}>
-        <View key="cover" style={styles.coverPage}>
-          <Text style={styles.title}>
-            {book.titleAr}
-          </Text>
-          <Text style={styles.author}>
-            تأليف: {book.authorAr}
-          </Text>
+  return (
+    <Drawer
+      open={isDrawerOpen}
+      onOpen={() => setIsDrawerOpen(true)}
+      onClose={() => setIsDrawerOpen(false)}
+      renderDrawerContent={() =>
+        <View style={styles.drawerContent}>
+          <Text style={styles.drawerHeader}>الفهرس</Text>
+          {/* Add your drawer content here */}
+          <Text>محتوى الفهرس</Text>
+        </View>}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="🔍 بحث..."
+            value={searchText}
+            onChangeText={text => {
+              setSearchText(text);
+              findPageWithText(text);
+            }}
+          />
         </View>
-        {book.pages.map(page =>
-          <ScrollView
-            key={page.pageNumber}
-            contentContainerStyle={styles.page}
+
+        {/* Button Bar */}
+        <View style={styles.buttonBar}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleButtonPress("ازاله التشكيل")}
           >
-            <Text style={styles.pageNumber}>
-              صفحة {page.pageNumber}
+            <Text style={styles.buttonText}>ازاله التشكيل</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleButtonPress("الفهرس")}
+          >
+            <Text style={styles.buttonText}>الفهرس </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleButtonPress("حجم الخط")}
+          >
+            <Text style={styles.buttonText}>حجم الخط</Text>
+          </TouchableOpacity>
+        </View>
+
+        <PagerView
+          style={styles.pagerView}
+          layoutDirection="rtl"
+          initialPage={0}
+          ref={pagerRef}
+        >
+          <View key="cover" style={styles.coverPage}>
+            <Text style={styles.title}>
+              {book.titleAr}
             </Text>
-            {highlightText(page.contentAr, searchText)}
-          </ScrollView>
-        )}
-      </PagerView>
-    </SafeAreaView>;
+            <Text style={styles.author}>
+              تأليف: {book.authorAr}
+            </Text>
+          </View>
+          {book.pages.map(page =>
+            <ScrollView
+              key={page.pageNumber}
+              contentContainerStyle={styles.page}
+            >
+              <Text style={styles.pageNumber}>
+                صفحة {page.pageNumber}
+              </Text>
+              {highlightText(page.contentAr, searchText)}
+            </ScrollView>
+          )}
+        </PagerView>
+      </SafeAreaView>
+    </Drawer>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -229,5 +268,16 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "black",
     fontSize: 16
+  },
+  drawerContent: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff"
+  },
+  drawerHeader: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "right"
   }
 });
