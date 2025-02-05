@@ -8,7 +8,8 @@ import {
   I18nManager,
   ScrollView,
   TouchableOpacity,
-  Alert
+  Alert,
+  Clipboard
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -35,6 +36,7 @@ export default function BookReader() {
   const [lineHeight, setLineHeight] = useState(32); // State to manage line height
   const [isSliderVisible, setIsSliderVisible] = useState(false); // State to manage slider visibility
   const [showDiacritics, setShowDiacritics] = useState(true); // State to manage diacritics visibility
+  const [matches, setMatches] = useState([]); // State to store matches
   const pagerRef = useRef(null);
 
   useEffect(() => {
@@ -60,15 +62,38 @@ export default function BookReader() {
   };
 
   const findPageWithText = text => {
-    if (!text.trim()) return;
-    const index = book.pages.findIndex(page => {
+    if (!text.trim()) {
+      setMatches([]);
+      return;
+    }
+
+    const trimmedSearch = text.trim();
+    const regex = new RegExp(`(${trimmedSearch})`, "gi");
+    const newMatches = [];
+
+    book.pages.forEach((page, pageIndex) => {
       const content = showDiacritics
         ? page.contentAr
         : removeDiacritics(page.contentAr);
-      return content.includes(text);
+      const pageMatches = [...content.matchAll(regex)];
+
+      if (pageMatches.length > 0) {
+        pageMatches.forEach(match => {
+          newMatches.push({
+            pageIndex,
+            start: match.index,
+            end: match.index + match[0].length
+          });
+        });
+      }
     });
-    if (index !== -1) {
-      setTargetPage(index);
+
+    setMatches(newMatches);
+
+    if (newMatches.length > 0) {
+      setTargetPage(newMatches[0].pageIndex + 1); // Navigate to the first match
+    } else {
+      setTargetPage(null); // No matches found
     }
   };
 
@@ -84,45 +109,62 @@ export default function BookReader() {
   const highlightText = (text, search) => {
     const trimmedSearch = search.trim();
     const content = showDiacritics ? text : removeDiacritics(text);
-    if (!trimmedSearch)
+
+    if (!trimmedSearch) {
       return (
         <Text
-          selectable={true} // Make text selectable
+          selectable={true}
           style={[
             styles.text,
             { fontSize, lineHeight, marginTop: fontSize * 2 }
           ]}
-          onLongPress={() => handleLongPress(content)} // Optional: Handle long press
+          onLongPress={() => handleLongPress(content)}
         >
           {content}
         </Text>
       );
+    }
 
     const regex = new RegExp(`(${trimmedSearch})`, "gi");
     const parts = content.split(regex);
 
     return (
       <Text
-        selectable={true} // Make text selectable
+        selectable={true}
         style={[styles.text, { fontSize, lineHeight, marginTop: fontSize * 2 }]}
-        onLongPress={() => handleLongPress(content)} // Optional: Handle long press
+        onLongPress={() => handleLongPress(content)}
       >
         {parts.map(
           (part, index) =>
             part.toLowerCase() === trimmedSearch.toLowerCase()
               ? <Text
                   key={index}
-                  style={[styles.highlight, { fontSize, lineHeight }]}
+                  style={[
+                    styles.highlight,
+                    {
+                      fontSize,
+                      lineHeight,
+                      backgroundColor: "#FFFF00", 
+                      color: "#000000", 
+                      fontWeight: "bold",
+                      textDecorationLine: "underline", 
+                      borderRadius: 3, 
+                      paddingHorizontal: 2, 
+                      paddingVertical: 1 
+                    }
+                  ]}
                 >
                   {part}
                 </Text>
-              : part
+              : <Text key={index}>
+                  {part}
+                </Text>
         )}
       </Text>
     );
   };
 
-  // Function to handle long press (optional)
+  
   const handleLongPress = text => {
     Alert.alert("نسخ النص", "هل تريد نسخ النص المحدد؟", [
       {
@@ -142,7 +184,7 @@ export default function BookReader() {
 
   const handleButtonPress = buttonName => {
     if (buttonName === "الفهرس") {
-      setIsDrawerOpen(true); // Open the drawer when "الفهرس" is pressed
+      setIsDrawerOpen(true); 
     } else if (buttonName === "حجم الخط") {
       setIsSliderVisible(!isSliderVisible); // Toggle slider visibility
     } else if (
@@ -151,8 +193,7 @@ export default function BookReader() {
     ) {
       toggleDiacritics(); // Toggle diacritics
     } else {
-      console.log(`${buttonName} button pressed`);
-      // Add your button press logic here
+      console.log(`${buttonName} button pressed`)
     }
   };
 
@@ -162,12 +203,18 @@ export default function BookReader() {
       page => page.chapterId === chapterId
     );
     if (firstPageOfChapter && pagerRef.current) {
-      pagerRef.current.setPage(firstPageOfChapter.pageNumber ); // Assuming pageNumber starts from 1
+      pagerRef.current.setPage(firstPageOfChapter.pageNumber - 1); // Assuming pageNumber starts from 1
       setIsDrawerOpen(false); // Close the drawer after navigation
     }
   };
 
-  return <Drawer open={isDrawerOpen} onOpen={() => setIsDrawerOpen(true)} onClose={() => setIsDrawerOpen(false)} renderDrawerContent={() => <View style={styles.drawerContent}>
+  return (
+    <Drawer
+      open={isDrawerOpen}
+      onOpen={() => setIsDrawerOpen(true)}
+      onClose={() => setIsDrawerOpen(false)}
+      renderDrawerContent={() =>
+        <View style={styles.drawerContent}>
           <Text style={styles.drawerHeader}>الفهرس</Text>
           {/* Render unique chapter IDs */}
           {uniqueChapterIds.map((chapterId, index) =>
@@ -181,49 +228,89 @@ export default function BookReader() {
               </Text>
             </TouchableOpacity>
           )}
-        </View>}>
+        </View>}
+    >
       <SafeAreaView style={styles.container}>
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <TextInput style={styles.searchInput} placeholder="🔍 بحث..." value={searchText} onChangeText={text => {
+          <TextInput
+            style={styles.searchInput}
+            placeholder="🔍 بحث..."
+            value={searchText}
+            onChangeText={text => {
               setSearchText(text);
               findPageWithText(text);
-            }} />
+            }}
+          />
+          {/* Display match count on the side */}
+          {matches.length > 0 &&
+            <View style={styles.matchCountContainer}>
+              <Text style={styles.matchCount}>
+                {matches.length} نتيجة
+              </Text>
+            </View>}
         </View>
 
         {/* Button Bar */}
         <View style={styles.buttonBar}>
-          <TouchableOpacity style={styles.button} onPress={() => handleButtonPress(showDiacritics ? "ازاله التشكيل" : "اعاده التشكيل")}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() =>
+              handleButtonPress(
+                showDiacritics ? "ازاله التشكيل" : "اعاده التشكيل"
+              )}
+          >
             <Text style={styles.buttonText}>
               {showDiacritics ? "ازاله التشكيل" : "اعاده التشكيل"}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("الفهرس")}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleButtonPress("الفهرس")}
+          >
             <Text style={styles.buttonText}>الفهرس </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("حجم الخط")}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleButtonPress("حجم الخط")}
+          >
             <Text style={styles.buttonText}>حجم الخط</Text>
           </TouchableOpacity>
         </View>
 
         {/* Vertical Slider for Font Size and Line Height */}
-        {isSliderVisible && <View style={styles.sliderContainer}>
-            <Slider style={styles.slider} minimumValue={10} maximumValue={40} step={1} value={fontSize} onValueChange={value => {
+        {isSliderVisible &&
+          <View style={styles.sliderContainer}>
+            <Slider
+              style={styles.slider}
+              minimumValue={10}
+              maximumValue={40}
+              step={1}
+              value={fontSize}
+              onValueChange={value => {
                 setFontSize(value);
-                setLineHeight(value * 1.6);
-              }} minimumTrackTintColor="#000" maximumTrackTintColor="#ccc" />
+                setLineHeight(value * 1.6); // Adjust line height proportionally to font size
+              }}
+              minimumTrackTintColor="#000"
+              maximumTrackTintColor="#ccc"
+            />
           </View>}
 
-        <PagerView style={styles.pagerView} layoutDirection="rtl" initialPage={0} ref={pagerRef}>
+        <PagerView
+          style={styles.pagerView}
+          layoutDirection="rtl"
+          initialPage={0}
+          ref={pagerRef}
+        >
           <View key="cover" style={styles.coverPage}>
-            <Text selectable={true} style={[styles.title, { fontSize: fontSize + 8 }]}>
+            <Text style={[styles.title, { fontSize: fontSize + 8 }]}>
               {book.titleAr}
             </Text>
-            <Text selectable={true} style={[styles.author, { fontSize: fontSize + 4 }]}>
+            <Text style={[styles.author, { fontSize: fontSize + 4 }]}>
               تأليف: {book.authorAr}
             </Text>
           </View>
-          {book.pages.map(page =>
+          {book.pages.map((page, pageIndex) =>
             <ScrollView
               key={page.pageNumber}
               contentContainerStyle={styles.page}
@@ -236,7 +323,8 @@ export default function BookReader() {
           )}
         </PagerView>
       </SafeAreaView>
-    </Drawer>;
+    </Drawer>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -245,19 +333,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF3E0"
   },
   searchContainer: {
+    flexDirection: "row", // Align items horizontally
+    alignItems: "center", // Center items vertically
     position: "absolute",
     top: 5,
     left: 10,
     right: 10,
     zIndex: 100
   },
-  pageNumber: {
-    textAlign: "center",
-    fontWeight: "bold",
-    backgroundColor: "rgba(255, 255, 255, 0.7)", // Optional: Transparent white background
-    paddingVertical: 5
-  },
   searchInput: {
+    flex: 1, // Take up remaining space
     height: 50,
     backgroundColor: "white",
     borderRadius: 8,
@@ -272,6 +357,20 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 4
+  },
+  matchCountContainer: {
+    marginLeft: 10, // Add spacing between search bar and match count
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: "#f0f0f0", // Light gray background
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc"
+  },
+  matchCount: {
+    color: "#666",
+    fontSize: 14,
+    textAlign: "center"
   },
   pagerView: {
     flex: 1
@@ -305,8 +404,13 @@ const styles = StyleSheet.create({
     writingDirection: "rtl"
   },
   highlight: {
-    backgroundColor: "yellow",
-    fontWeight: "bold"
+    backgroundColor: "#FFFF00",
+    color: "#000000",
+    fontWeight: "bold",
+    textDecorationLine: "underline",
+    borderRadius: 3,
+    paddingHorizontal: 2,
+    paddingVertical: 1
   },
   error: {
     fontSize: 18,
@@ -360,19 +464,25 @@ const styles = StyleSheet.create({
   sliderContainer: {
     position: "absolute",
     left: 20,
-    top: 100,
+    top: 180,
     height: 200,
     justifyContent: "center",
     alignItems: "center",
-    width: 200,
-    backgroundColor: "green",
+    width: 20,
+ 
     zIndex: 100
   },
   slider: {
-    backgroundColor: "black",
-    width: 140,
-    height: 120,
+    
+    width: 200,
+    height: 20,
     margin: 0,
     transform: [{ rotate: "270deg" }]
+  },
+  pageNumber: {
+    textAlign: "center",
+    fontWeight: "bold",
+    backgroundColor: "rgba(255, 255, 255, 0.7)", // Optional: Transparent white background
+    paddingVertical: 5
   }
 });
