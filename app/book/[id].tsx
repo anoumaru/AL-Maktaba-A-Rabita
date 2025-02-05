@@ -50,6 +50,9 @@ export default function BookReader() {
     );
   }
 
+  // Extract unique chapter IDs from book.pages
+  const uniqueChapterIds = [...new Set(book.pages.map(page => page.chapterId))];
+
   // Function to toggle diacritics
   const toggleDiacritics = () => {
     setShowDiacritics(!showDiacritics);
@@ -125,93 +128,74 @@ export default function BookReader() {
     ) {
       toggleDiacritics(); // Toggle diacritics
     } else {
-      console.log(`${buttonName} button pressed`);
-      // Add your button press logic here
+      console.log(`${buttonName} button pressed`); // for other buttons
     }
   };
 
-  return (
-    <Drawer
-      open={isDrawerOpen}
-      onOpen={() => setIsDrawerOpen(true)}
-      onClose={() => setIsDrawerOpen(false)}
-      renderDrawerContent={() =>
-        <View style={styles.drawerContent}>
+  // Function to navigate to a specific chapter
+  const navigateToChapter = chapterId => {
+    const firstPageOfChapter = book.pages.find(
+      page => page.chapterId === chapterId
+    );
+    if (firstPageOfChapter && pagerRef.current) {
+      pagerRef.current.setPage(firstPageOfChapter.pageNumber ); 
+      setIsDrawerOpen(false); // Close the drawer after navigation
+    }
+  };
+
+  return <Drawer open={isDrawerOpen} onOpen={() => setIsDrawerOpen(true)} onClose={() => setIsDrawerOpen(false)} renderDrawerContent={() => <View style={styles.drawerContent}>
           <Text style={styles.drawerHeader}>الفهرس</Text>
-          {/* Add your drawer content here */}
-          <Text>محتوى الفهرس</Text>
-        </View>}
-    >
+          {/* Render unique chapter IDs */}
+          {uniqueChapterIds.map((chapterId, index) =>
+            <TouchableOpacity
+              key={index}
+              style={styles.chapterItem}
+              onPress={() => navigateToChapter(chapterId)}
+            >
+              <Text style={styles.chapterText}>
+                الفصل {chapterId}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>}>
       <SafeAreaView style={styles.container}>
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="🔍 بحث..."
-            value={searchText}
-            onChangeText={text => {
+          <TextInput style={styles.searchInput} placeholder="🔍 بحث..." value={searchText} onChangeText={text => {
               setSearchText(text);
               findPageWithText(text);
-            }}
-          />
+            }} />
         </View>
 
         {/* Button Bar */}
         <View style={styles.buttonBar}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() =>
-              handleButtonPress(
-                showDiacritics ? "ازاله التشكيل" : "اعاده التشكيل"
-              )}
-          >
+          <TouchableOpacity style={styles.button} onPress={() => handleButtonPress(showDiacritics ? "ازاله التشكيل" : "اعاده التشكيل")}>
             <Text style={styles.buttonText}>
               {showDiacritics ? "ازاله التشكيل" : "اعاده التشكيل"}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => handleButtonPress("الفهرس")}
-          >
+          <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("الفهرس")}>
             <Text style={styles.buttonText}>الفهرس </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => handleButtonPress("حجم الخط")}
-          >
+          <TouchableOpacity style={styles.button} onPress={() => handleButtonPress("حجم الخط")}>
             <Text style={styles.buttonText}>حجم الخط</Text>
           </TouchableOpacity>
         </View>
 
         {/* Vertical Slider for Font Size and Line Height */}
-        {isSliderVisible &&
-          <View style={styles.sliderContainer}>
-            <Slider
-              style={styles.slider}
-              minimumValue={10}
-              maximumValue={40}
-              step={1}
-              value={fontSize}
-              onValueChange={value => {
+        {isSliderVisible && <View style={styles.sliderContainer}>
+            <Slider style={styles.slider} minimumValue={10} maximumValue={40} step={1} value={fontSize} onValueChange={value => {
                 setFontSize(value);
                 setLineHeight(value * 1.6); // Adjust line height proportionally to font size
-              }}
-              minimumTrackTintColor="#000"
-              maximumTrackTintColor="#ccc"
-            />
+              }} minimumTrackTintColor="#000" maximumTrackTintColor="#ccc" />
           </View>}
 
-        <PagerView
-          style={styles.pagerView}
-          layoutDirection="rtl"
-          initialPage={0}
-          ref={pagerRef}
-        >
+        <PagerView style={styles.pagerView} layoutDirection="rtl" initialPage={0} ref={pagerRef}>
           <View key="cover" style={styles.coverPage}>
             <Text style={[styles.title, { fontSize: fontSize + 8 }]}>
               {book.titleAr}
             </Text>
-            <Text style={[styles.author, { fontSize: fontSize + 4 }]}>
+            <Text selectable style={[styles.author, { fontSize: fontSize + 4 }]}>
               تأليف: {book.authorAr}
             </Text>
           </View>
@@ -228,8 +212,7 @@ export default function BookReader() {
           )}
         </PagerView>
       </SafeAreaView>
-    </Drawer>
-  );
+    </Drawer>;
 }
 
 const styles = StyleSheet.create({
@@ -339,6 +322,15 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "right"
+  },
+  chapterItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc"
+  },
+  chapterText: {
+    fontSize: 16,
     textAlign: "right"
   },
   sliderContainer: {

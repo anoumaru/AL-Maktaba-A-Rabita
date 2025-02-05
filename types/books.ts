@@ -43,6 +43,30 @@ export const sampleBooks: Book[] = [
         content: 'Chapter 2: The Importance of Pure Monotheism...',
         contentAr: 'باب أهمية التوحيد الخالص...',
         chapterId: 'chapter2'
+      },
+      {
+        id: 'page3',
+        pageNumber: 3,
+        isIndex: false,
+        content: 'Chapter 2: The Importance of Pure Monotheism...',
+        contentAr: 'باب أهمية التوحيد الخالص...',
+        chapterId: 'chapter2'
+      },
+      {
+        id: 'page4',
+        pageNumber: 4,
+        isIndex: false,
+        content: 'Chapter 2: The Importance of Pure Monotheism...',
+        contentAr: 'باب أهمية التوحيد الخالص...',
+        chapterId: 'chapter2'
+      },
+      {
+        id: 'page5',
+        pageNumber: 5,
+        isIndex: false,
+        content: 'Chapter 2: The Importance of Pure Monotheism...',
+        contentAr: 'باب أهمية التوحيد الخالص...',
+        chapterId: 'chapter3'
       }
     ]
   },
