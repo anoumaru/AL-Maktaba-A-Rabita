@@ -2,6 +2,9 @@
 
 A specialized Islamic literature application featuring cross-referencing capabilities between books. The app primarily focuses on Arabic content with full RTL (Right-to-Left) support for all interfaces and text.
 
+## Community
+You can join the community on Discord: https://discord.gg/8e2bkbPz
+
 ## Core Features
 
 ### Book Management
